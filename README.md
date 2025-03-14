@@ -1,6 +1,6 @@
 # An Analyst's Guide to Azure Data Lake Storage Gen 2
 ## Description
-This repository contains a beginner-friendly guide for connecting to Azure Data Lake Storage (ADLS) Gen 2 using Python 🐍.
+This repository contains a beginner-friendly guide for connecting to Azure Data Lake Storage (ADLS) Gen 2 using R or Python 🐍.
 
 Join me as I walk you through the essentials, so you can focus on analysing data, not battling with storage setups. 🚀
 
@@ -15,14 +15,6 @@ Join me as I walk you through the essentials, so you can focus on analysing data
 3. Viewing Files Within Your Storage Account
 4. Downloading Files for Analysis
 5. Uploading Files to Your Storage Account
-
-## Prerequisites
-To follow along with this guide, you'll need to: <br>
-- **Have a Python installation** <br>
-- **Jupyterlab, VS Code or similar**  (If VS code, the python and jupyter extensions should be installed). <br>
-- **Create a virtual environment and install dependencies:**
-  - `pip install -r requirements.txt`
-  - See `instructions_create_venv.md` for more detail.
 
 ## Contributing
 If you'd like to contribute to this project, feel free to fork the repository, create a new branch, and submit a pull request with your changes. Contributions, bug reports, and feature requests are always welcome!
