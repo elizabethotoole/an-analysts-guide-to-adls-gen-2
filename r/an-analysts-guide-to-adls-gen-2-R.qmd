@@ -1,0 +1,212 @@
+---
+title: "an-analysts-guide-to-adls-gen-2-R"
+author: [elizabethotoole](https://github.com/elizabethotoole)
+format: html
+editor: visual
+---
+
+# An Analyst's Guide to Azure Data Lake Storage Gen 2 using R
+
+Author: [elizabethotoole](https://github.com/elizabethotoole)
+
+Adapted from: <https://github.com/edmundhaacke/nhs-r-reporting/blob/main/examples/rstudio_datalake_connection_example.R>
+
+This beginner-friendly notebook serves as a step-by-step guide for connecting to Azure Data Lake Storage (ADLS) Gen 2 using R and a shared access signature (SAS).
+
+Join me as I walk you through the essentials, so you can focus on analysing data, not battling with storage setups. 🚀
+
+Example use case: To connect to lake data to undertake analysis and create a product/report as an HTML output.
+
+## 1. A Quick Overview of Fundamental Concepts
+
+#### What is ADLS Gen 2?
+
+Azure Data Lake Storage Gen 2 (ADLS Gen 2) is a cloud storage service from Microsoft Azure designed to store large amounts of data.
+
+#### How is it structured?
+
+-   **Storage account** - The highest level of storage and is where all your data is stored and accessed.
+
+    | e.g. "[https://youraccount.blob.core.windows.net"](https://youraccount.blob.core.windows.net%22)
+
+    The youraccount part of the URL should be replaced with your actual Azure Storage account name. The account_url will be used to authenticate and connect to your specific Azure Storage account.
+
+-   **Containers**- Inside a storage account, data is organised into containers. Think of containers as "buckets" that hold your data.
+
+    |  e.g. "your-container-name"
+
+    Replace "your-container-name" with the actual name of the container where your files are stored.
+
+-   **Folders and Subfolders**: ADLS Gen 2 allows you to organise data using folders, this differs to traditional storage which is typically stored in flat containers.
+
+    | e.g. "your-container-name/raw_data/"
+
+    You can have folders like raw_data/, processed_data/, or analytics/, and within these, additional subfolders like logs/, reports/, etc.
+
+-   **Blobs**: These are the files themselves which are stored inside the containers, folders, or subfolders.
+
+    | e.g. "raw_data/logs/jan_log.csv"
+
+    Blobs (aka files) can be in various formats like CSV, Parquet, JSON, and even images and videos.
+
+#### What is a Shared Access Signature (SAS)?
+
+A SAS token provides a way to limit access to your data by granting specific permissions (e.g., read-only) for a defined time frame and is a way to share access to specific files without exposing sensitive credentials.
+
+SAS tokens are created by those with administrative privileges to the Azure Storage account and are stored in a key vault. Analysts typically don't set up SAS tokens themselves but can request a SAS token to access data from the administrator accordingly.
+
+## 2. Downloading data from ALDS Gen 2 ⬇️
+
+::: callout-caution
+Note: Before loading the data, it's crucial to consider the size of your dataset as this will influence how we load the data into a dataframe for analysis.
+
+This guide is aimed at analysts seeking to connect to ADLS gen 2 storage from an IDE like RStudio in order to work with datasets that can fit into memory.
+
+Working with larger datasets is out of scope for this guide, I have listed some useful information and resources below.
+
+As an analyst, you are likely to access larger datasets through dedicated environments such as Databricks where your fellow data engineers have done a lot of the heavy lifting with spark configurations.
+
+Take a look at ["The R Developer's Guide to Databricks"](https://www.databricks.com/sites/default/files/2025-02/developers-guide-R.pdf) for more information.
+:::
+
+### Step 1: Import the necessary libraries
+
+```{r load libraries, include = FALSE}
+
+# Import the necessary libraries
+# ---------------------------------------------------------
+
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("dplyr")) install.packages("dplyr")
+if (!require("AzureStor")) install.packages("AzureStor")
+if (!require("AzureKeyVault")) install.packages("AzureKeyVault")
+if (!require("arrow")) install.packages("arrow")
+if (!require("data.table")) install.packages("data.table")
+
+```
+
+### Step 2: Connect to Azure Blob Storage
+
+```{r setup lake connection details, include = FALSE}
+
+# Replace with address of your Azure Key Vault where the SAS tokens are contained
+  key_vault_url <- "<insert_key_vault_address>"
+  
+# Replace with the sas token name set up by the org.
+  secret_name <- "<insert_token_name>"
+  
+# Replace youraccount with the name of your Azure Blob Storage account.
+  account_url <- "https://youraccount.blob.core.windows.net"
+  
+# Replace your-container-name with the name of your container in Azure Blob Storage.
+  storage_container_name <- "your-container-name" 
+
+# Now setup connection settings
+  vault <- key_vault(key_vault_url)
+  
+  sas_token <- vault$secrets$get(secret_name)
+   
+  storage_account <- storage_endpoint(account_url, sas = sas_token$value)
+  
+  container <- storage_container(storage_account, storage_container_name)
+
+```
+
+### Step 3: Load Data from the Blob Storage
+
+For datasets that can fit into memory, you can access ADLS gen 2 storage with the following code. Examples provided are for CSV and parquet file types but could be expanded to support other file formats.
+
+#### Read in a CSV
+
+```{r read csv files, include = FALSE}
+
+# Read in a single CSV
+  filename <- "PATH/TO/.csv"
+  rawdata <- storage_download(container, filename, dest = NULL)
+  df <- read_csv_arrow(rawdata)
+  view(df)
+  
+# Multiple files (csv)
+## first list the files within the lake destination specified
+  filenames <- list_adls_files(
+    container,
+    dir = "/<PATH>/",
+    info = c("name"),
+    recursive = TRUE
+    ) # true gets all files within the folder path
+
+## Iterate through each file in files names and read into df
+   df <- rbindlist(
+     lapply(
+       filenames, function(i){
+         rawdata <- storage_download(container,i,dest = NULL)
+         read_csv_arrow(rawdata)
+         }
+       )
+     )
+
+```
+
+#### Read in parquet files
+
+```{r read parquet files, include = FALSE}
+
+# Read in a single parquet
+  filename <- "PATH/TO/.parquet"
+  rawdata <- storage_download(container, filename, dest = NULL)
+  df <- read_parquet(rawdata)
+
+# Multiple files (csv)
+## first list the files within the lake destination specified
+  filenames <- list_adls_files(
+    container,
+    dir = "/<PATH>/", # folder directory
+    info = c("name"), 
+    recursive = TRUE
+    ) # true gets all file names within the folder path, including subfolders
+
+## iterate through each file in files names and read into df  
+   df <- rbindlist(
+     lapply(
+       filenames, function(i){
+         rawdata <- storage_download(container,i,dest = NULL)
+         read_parquet(rawdata)
+         }
+       )
+     )
+```
+
+### Step 4: Now view your data
+
+```{r view data, include = FALSE}
+view(df)
+```
+
+## Uploading Data to Azure Blob Storage ⬆️
+
+The below code allows us to upload a file from our local machine into Azure Blob Storage which we can then subsequently incorporate into analytical projects.
+
+```{r upload data to ADLS gen 2, include = FALSE}
+
+# locate the file you want to upload include file type
+  local_file_path = "Documents/file_1.csv" 
+
+# define where you want to upload your file include file type
+  blob_name = "uploads/file1.csv"  # Path in the container
+
+# Now upload the file
+  upload_adls_file(
+    filesystem = container, # defined earlier in step 2.
+    src = local_file_path,
+    dest = blob_name, 
+    blocksize = 2^24,  # Chunk size for file upload (optional, default is 16MB)
+    put_md5 = FALSE,   # Calculate and store MD5 hash (optional)
+    use_azcopy = FALSE # Use AzCopy for faster upload (optional)
+  )
+    
+```
+
+## Further Reading 📚
+
+-   [Shared Access Signatures (SAS Tokens)](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers)
+-   [R: Operations on an Azure Data Lake Storage Gen2 filesystem](https://search.r-project.org/CRAN/refmans/AzureStor/html/adls.html)
