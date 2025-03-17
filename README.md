@@ -1,11 +1,11 @@
 # An Analyst's Guide to Azure Data Lake Storage Gen 2
 ## Description
-This repository contains a beginner-friendly guide for connecting to Azure Data Lake Storage (ADLS) Gen 2 using Python 🐍.
+This repository contains beginner-friendly guides for connecting to Azure Data Lake Storage (ADLS) Gen 2 using R or Python 🐍.
 
 Join me as I walk you through the essentials, so you can focus on analysing data, not battling with storage setups. 🚀
 
 ## Key Features
-- :muscle: **Hands-on notebook**: Dive right in with an interactive Jupyter notebook that you can run and modify to see the results yourself.
+- :muscle: **Hands-on notebook**: Dive right in with an interactive notebook which you can run and modify to easily follow along.
 - :sparkles: **Simple and clear explanations**: Written for analysts by an analyst, helping to cut through the technical jargon.
 
 ## Contents:
@@ -16,23 +16,8 @@ Join me as I walk you through the essentials, so you can focus on analysing data
 4. Downloading Files for Analysis
 5. Uploading Files to Your Storage Account
 
-## Prerequisites
-To follow along with this guide, you'll need:
-- **Python installation** (I used 3.13.1)
-- **Jupyterlab, VS Code or similar**  (If VS code, the python and jupyter extensions should be installed).
-- Required Python packages:
-  - azure-identity
-  - azure-storage-blob
-  - pyarrow
-  - pandas
-  - pyspark
-
-You can install the required packages using `pip` 
-> pip install azure-identity azure-storage-blob pyarrow pandas pyspark
-
 ## Contributing
 If you'd like to contribute to this project, feel free to fork the repository, create a new branch, and submit a pull request with your changes. Contributions, bug reports, and feature requests are always welcome!
 
 ## License
 This project is licensed under the MIT License – see the LICENSE file for details.
-
