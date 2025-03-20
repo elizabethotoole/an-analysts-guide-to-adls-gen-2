@@ -13,7 +13,7 @@ To create a virtual environment, use the following command:
 - Replace `venv-directory` with the name you want for your virtual environment. Common names include venv, but you can choose any name (e.g. project_env). Just make sure you add this custom name to your .gitignore file to avoid pushing it to GitHub. <br>
 
 **Activate the virtual environment**. 
-> `<venv-directory>/Scripts/activate` <br>
+> `<venv-directory>\Scripts\activate` <br>
 - Make sure to replace <venv-directory> with the name you gave your virtual environment, like venv or project_env.
 
 **Install the dependencies specified in the requirements.txt file**. <br>
